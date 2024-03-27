@@ -1,6 +1,16 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import seaborn as sns 
+import matplotlib.pyplot as plt
+import io
+
+def set_header_as_first_row(data):
+
+    if not data.columns.size:
+        data.columns = data.iloc[0]
+        data = data[1:]
+    return data
 
 #Tite and subheader
 st.title('Exploratory Data Analysis')
@@ -10,6 +20,7 @@ st.subheader('Data Information')
 upload = st.file_uploader('Choose a CSV file', type='csv')
 if upload is not None:
     data = pd.read_csv(upload)
+    data = set_header_as_first_row(data)
 
 #Show Dataset
     if st.checkbox('Show Dataset'):
@@ -27,7 +38,6 @@ if upload is not None:
     if st.checkbox('Show Datatype'):
         st.text('Data Type')
         st.write(data.dtypes)
-
     #Show the number of rows and columns using radio button
     if st.checkbox('Show Shape'):
         data_shape = st.radio('Shape of Dataset', ('Rows', 'Columns'))
@@ -38,15 +48,27 @@ if upload is not None:
     #Show NULL values
     if st.checkbox('Show NULL Values'):
         st.write(data.isnull().sum())
-        test = data.isnull().values().any()
+        test = data.isnull().values.any()
         if test:
-            st.write('There are NULL values in the dataset')
-            if st.checkbox('Show NULL values'):
-                sns.heatmap(data.isnull())
-                st.pyplot()
+            st.warning('There are NULL values in the dataset')
+            #Plotting the NULL values
+            if st.checkbox('Plot NULL values'):
+                fig, ax = plt.subplots()
+                sns.heatmap(data.isnull(), cbar=False, ax=ax)
+                st.pyplot(fig)
 
+
+            # Dropping NULL values
+            if st.checkbox('Drop NULL values'):
+                if st.checkbox('Drop inplace'):
+                    data.dropna(inplace=True)
+                    st.success('NULL values dropped inplace.')
+                if st.checkbox("Create a new dataframe"):
+                    new_data = data.dropna()
+                    st.write('A new DataFrame without NULL values has been created.')
+                    st.write(new_data)
         else:
-            st.write('There are no NULL values in the dataset')
+            st.write('There are no NULL values in the dataset.')
 
         
     #Show Value Counts
@@ -72,20 +94,38 @@ if upload is not None:
                 st.write('Duplicate values are not dropped')
         else:
             st.success('There are no duplicate values in the dataset')
-
+    #Plotting bar chart between two coloums
+    if st.checkbox('Bar Chart'):
+        column = st.selectbox('Select Column', data.columns)
+        st.write('Bar Chart')
+        st.bar_chart(data[column].value_counts())
     #Correlation
     if st.checkbox('Show Correlation'):
-        st.write(data.corr())
-        sns.heatmap(data.corr())
-        st.pyplot()
+        numeric_columns = data.select_dtypes(include=[np.number]).columns
+        corr_matrix = data[numeric_columns].corr()
+        st.write(corr_matrix)
+
+        if st.checkbox('Plot Correlation'):
+            fig, ax = plt.subplots()
+            sns.heatmap(corr_matrix, cmap='coolwarm', annot=True, ax=ax)
+            st.pyplot(fig)
     
-    #Plotting
-    if st.checkbox('Plotting'):
-        column = st.selectbox('Select Column', data.columns)
-        sns.countplot(data[column])
-        st.pyplot()
+
+    #Downloading the processed dataset
+# Check if the user clicked the "Download Processed Data" button
+    if st.button('Download Processed Data'):
+        # Convert the DataFrame to a CSV file
+        csv = data.to_csv(index=False)
+        # Create a link for the user to click and download the file
+        st.download_button(
+            label='Download CSV',
+            data=csv,
+            file_name='processed_data.csv',
+            mime='text/csv'
+        )
+
 if st.button("About Application"):
     st.text('This is a simple EDA application which is used to perform EDA on the dataset. ')
-    st.text('It is developed by Ayush Das as a part of TTL Mini Project')
+    st.text('It is developed by Ayush Das,Sayan Banerjee as a part of TTL Mini Project')
     st.text('Email: 2105113@kiit.ac.in')
     st.text('Roll Number: 2105113')
