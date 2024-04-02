@@ -125,7 +125,7 @@ if upload is not None:
         )
 
 if st.button("About Application"):
-    st.text('This is a simple EDA application which is used to perform EDA on the dataset. ')
-    st.text('It is developed by Ayush Das,Sayan Banerjee as a part of TTL Mini Project')
-    st.text('Email: 2105113@kiit.ac.in')
-    st.text('Roll Number: 2105113')
+    st.text('This is a simple EDA application which is used to perform EDA on a dataset. ')
+    st.text('It is developed by Ayush Das, Sayan Banerjee, Sreejata Banerjee,')
+    st.text('Lucky Das and Mrinalini Bhattacharjee')
+    st.text('This projected in intended to make the data preprocessing easy for users.')
