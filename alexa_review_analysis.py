@@ -29,7 +29,7 @@ def set_header_as_first_row(data):
     return data
 
 #Tite and subheader
-st.title('Exploratory Data Analysis & Alexa Review Analysis')
+st.title('Amazon Alexa Review Sentiment Analysis using EDA')
 st.subheader('Data Information')
 
 #Upload File
